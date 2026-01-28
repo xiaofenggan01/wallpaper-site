@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(open:*)",
+      "Bash(npm install:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(npx:*)",
+      "Bash(npm start)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(sqlite3:*)",
+      "Bash(curl:*)",
+      "Bash(node server.js)",
+      "Bash(cat:*)",
+      "Skill(ui-ux-pro-max)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "mcp__zread__get_repo_structure",
+      "mcp__zread__read_file",
+      "Bash(ls:*)",
+      "Bash(unzip:*)",
+      "Bash(yt-dlp:*)",
+      "Skill(frontend-design:frontend-design)",
+      "mcp__zai-mcp-server__diagnose_error_screenshot",
+      "Bash(node:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

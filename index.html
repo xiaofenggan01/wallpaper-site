@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallpaper Gallery - 手机壁纸精选</title>
+    <meta name="description" content="精选手机壁纸，现代极简风格，免费下载">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        heading: ['Space Grotesk', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'warm-bg': '#fdfbf7',
+                        'wheat': '#f5e6d3',
+                        'warm-brown': '#4a3b32',
+                        'warm-gray': '#8c7b70',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ============================================================================
+           DUAL MODE BACKGROUND SYSTEM
+           ============================================================================ */
+
+        /* Dark Mode: Neon Aurora */
+        html.dark .dual-bg {
+            background: #0b1121;
+            background-image: linear-gradient(to bottom right,
+                rgba(49, 46, 129, 0.15) 0%,
+                rgba(88, 28, 135, 0.1) 50%,
+                #0b1121 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        html.dark .dual-bg::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1200px;
+            height: 100vh;
+            background: radial-gradient(ellipse at top,
+                rgba(255, 255, 255, 0.02) 0%,
+                transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Light Mode: Warm Wheat */
+        html:not(.dark) .dual-bg {
+            background: #fdfbf7;
+            background-image: linear-gradient(to bottom,
+                #fdfbf7 0%,
+                #f8f4ef 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        html:not(.dark) .dual-bg::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1200px;
+            height: 100vh;
+            background: radial-gradient(ellipse at top,
+                rgba(245, 230, 211, 0.4) 0%,
+                transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ============================================================================
+           FLOATING HEADER - DUAL MODE WITH STICKY
+           ============================================================================ */
+
+        /* Base Header Styles */
+        .floating-header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Header glow on scroll */
+        .floating-header.scrolled {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        html.dark .floating-header.scrolled {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                        0 0 0 1px rgba(120, 119, 255, 0.1) !important;
+        }
+
+        html:not(.dark) .floating-header.scrolled {
+            box-shadow: 0 8px 32px rgba(74, 59, 50, 0.15),
+                        0 0 0 1px rgba(180, 140, 100, 0.1) !important;
+        }
+
+        /* Dark Mode Header */
+        html.dark .floating-header {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Light Mode Header */
+        html:not(.dark) .floating-header {
+            background: rgba(245, 230, 211, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(214, 211, 209, 0.5);
+            box-shadow: 0 4px 30px rgba(74, 59, 50, 0.1);
+        }
+
+        /* ============================================================================
+           DENSE GRID LAYOUT
+           ============================================================================ */
+
+        .dense-grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 0.5rem;
+        }
+
+        @media (min-width: 640px) {
+            .dense-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .dense-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .dense-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.5rem;
+                grid-auto-rows: 280px;
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .dense-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 0.5rem;
+            }
+        }
+
+        /* Featured item spans 2x2 */
+        .gallery-item:nth-child(1) {
+            grid-column: span 1;
+            grid-row: span 1;
+        }
+
+        @media (min-width: 640px) {
+            .gallery-item:nth-child(1) {
+                grid-column: span 2;
+                grid-row: span 2;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .gallery-item:nth-child(1) {
+                grid-column: span 2;
+                grid-row: span 2;
+            }
+        }
+
+        /* ============================================================================
+           CINEMATIC CARD - DUAL MODE
+           ============================================================================ */
+
+        /* Dark Mode Cards */
+        html.dark .gallery-item {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        html.dark .gallery-item::before {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), transparent);
+        }
+
+        html.dark .gallery-item:hover {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Light Mode Cards */
+        html:not(.dark) .gallery-item {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        html:not(.dark) .gallery-item::before {
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.03), transparent);
+        }
+
+        html:not(.dark) .gallery-item:hover {
+            box-shadow: 0 20px 40px rgba(74, 59, 50, 0.15);
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gallery-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0.5rem;
+            padding: 1px;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.02);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* ============================================================================
+           HOVER REVEAL OVERLAY - DUAL MODE
+           ============================================================================ */
+
+        .gallery-item .hover-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 40%, transparent 100%);
+            opacity: 0;
+            transition: opacity 250ms ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1rem;
+        }
+
+        .gallery-item:hover .hover-overlay {
+            opacity: 1;
+        }
+
+        /* ============================================================================
+           FEATURED BADGE - DUAL MODE
+           ============================================================================ */
+
+        /* Dark Mode Badge */
+        html.dark .featured-badge {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Light Mode Badge */
+        html:not(.dark) .featured-badge {
+            background: rgba(74, 59, 50, 0.08);
+            border-color: rgba(74, 59, 50, 0.15);
+            color: rgba(74, 59, 50, 0.7);
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            backdrop-filter: blur(8px);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.65rem;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            transition: opacity 250ms ease;
+        }
+
+        .gallery-item:hover .featured-badge {
+            opacity: 1;
+        }
+
+        /* ============================================================================
+           CARD METADATA - DUAL MODE
+           ============================================================================ */
+
+        /* Dark Mode Metadata */
+        html.dark .card-title {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        html.dark .card-user {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Light Mode Metadata */
+        html:not(.dark) .card-title {
+            color: rgba(74, 59, 50, 0.95);
+        }
+
+        html:not(.dark) .card-user {
+            color: rgba(74, 59, 50, 0.5);
+        }
+
+        .card-metadata {
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 250ms ease;
+        }
+
+        .gallery-item:hover .card-metadata {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 100ms;
+        }
+
+        .card-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-user {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.625rem;
+        }
+
+        /* ============================================================================
+           ACTION BUTTONS - DUAL MODE
+           ============================================================================ */
+
+        /* Dark Mode Actions */
+        html.dark .card-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        html.dark .card-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Light Mode Actions */
+        html:not(.dark) .card-action-btn {
+            background: rgba(74, 59, 50, 0.08);
+            border-color: rgba(74, 59, 50, 0.15);
+            color: #4a3b32;
+        }
+
+        html:not(.dark) .card-action-btn:hover {
+            background: rgba(74, 59, 50, 0.15);
+        }
+
+        html:not(.dark) .card-action-btn.favorited {
+            background: rgba(234, 88, 12, 0.9);
+            border-color: rgba(234, 88, 12, 1);
+            color: white;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 250ms ease;
+        }
+
+        .gallery-item:hover .card-actions {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 150ms;
+        }
+
+        .card-action-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.375rem;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .card-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .card-action-btn.favorited svg {
+            fill: currentColor;
+        }
+
+        /* ============================================================================
+           CUSTOM SCROLLBAR
+           ============================================================================ */
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        html.dark ::-webkit-scrollbar-track {
+            background: #0b1121;
+        }
+
+        html:not(.dark) ::-webkit-scrollbar-track {
+            background: #f8f4ef;
+        }
+
+        html.dark ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        html:not(.dark) ::-webkit-scrollbar-thumb {
+            background: rgba(74, 59, 50, 0.15);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+            background: rgba(74, 59, 50, 0.25);
+        }
+
+        /* ============================================================================
+           ANIMATIONS
+           ============================================================================ */
+
+        * {
+            transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+        }
+
+        .gallery-item {
+            animation: fade-in 0.6s ease-out;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Modal styles */
+        .modal-backdrop {
+            animation: fadeIn 200ms ease;
+        }
+        .modal-content {
+            animation: slideUp 300ms ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Auth Modal */
+        .auth-modal-backdrop {
+            animation: fadeIn 200ms ease;
+        }
+        .auth-modal-content {
+            animation: slideUp 300ms ease;
+        }
+
+        /* ============================================================================
+           SORTABLEJS STYLES
+           ============================================================================ */
+
+        .gallery-item {
+            cursor: grab;
+            transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 200ms ease;
+        }
+
+        .gallery-item:active {
+            cursor: grabbing;
+        }
+
+        .sortable-ghost {
+            opacity: 0.3 !important;
+            transform: scale(0.95) !important;
+        }
+
+        .sortable-chosen {
+            cursor: grabbing !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+            z-index: 1000 !important;
+        }
+
+        html:not(.dark) .sortable-chosen {
+            box-shadow: 0 20px 40px rgba(74, 59, 50, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .sortable-drag {
+            cursor: grabbing !important;
+        }
+
+        /* ============================================================================
+           FILTER PILLS - FROSTED GLASS CAPSULE STYLE
+           ============================================================================ */
+
+        /* Base Filter Pill Style */
+        .filter-pill {
+            padding: 0.625rem 1.25rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border-width: 1px;
+            border-style: solid;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Shimmer effect on hover */
+        .filter-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: left 500ms ease;
+        }
+
+        .filter-pill:hover::before {
+            left: 100%;
+        }
+
+        /* Dark Mode Filter Pills */
+        html.dark .filter-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        html.dark .filter-pill:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
+            color: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2),
+                        0 0 24px rgba(120, 119, 255, 0.15);
+        }
+
+        html.dark .filter-pill.active {
+            background: linear-gradient(135deg,
+                rgba(120, 119, 255, 0.8) 0%,
+                rgba(88, 28, 135, 0.8) 100%);
+            border-color: rgba(168, 162, 255, 0.5);
+            color: rgba(255, 255, 255, 1);
+            box-shadow: 0 4px 20px rgba(120, 119, 255, 0.4),
+                        0 0 40px rgba(120, 119, 255, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Light Mode Filter Pills */
+        html:not(.dark) .filter-pill {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(214, 211, 209, 0.6);
+            color: #4a3b32;
+            box-shadow: 0 2px 8px rgba(74, 59, 50, 0.08);
+        }
+
+        html:not(.dark) .filter-pill:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(168, 162, 158, 0.8);
+            color: #4a3b32;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(74, 59, 50, 0.15),
+                        0 0 24px rgba(180, 140, 100, 0.1);
+        }
+
+        html:not(.dark) .filter-pill.active {
+            background: linear-gradient(135deg,
+                rgba(245, 230, 211, 1) 0%,
+                rgba(214, 197, 175, 1) 100%);
+            border-color: rgba(180, 140, 100, 0.6);
+            color: #4a3b32;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(180, 140, 100, 0.3),
+                        0 0 40px rgba(180, 140, 100, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="font-body dual-bg min-h-screen"
+      x-data="{ mouseX: 0, mouseY: 0 }"
+      @mousemove="mouseX = $event.clientX; mouseY = $event.clientY"
+      :style="'--mouse-x: ' + mouseX + 'px; --mouse-y: ' + mouseY + 'px;'">
+
+    <!-- 1. Gentle Blue-Purple Gradient Background Layer -->
+    <div class="fixed inset-0 -z-20 dark:opacity-100 opacity-0 transition-opacity duration-500"
+         style="background: linear-gradient(to top right, rgba(76, 29, 149, 0.5), #0b1121, rgba(88, 28, 135, 0.5));">
+    </div>
+
+    <!-- 2. Frosted Noise Texture Overlay -->
+    <div class="fixed inset-0 z-[-10] pointer-events-none dark:opacity-100 opacity-0 transition-opacity duration-500"
+         style="background-image: url(&quot;data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E&quot;);">
+    </div>
+
+    <!-- 3. Mouse-Following Spotlight Effect -->
+    <div class="fixed inset-0 z-[-15] pointer-events-none transition-opacity duration-300"
+         style="background: radial-gradient(600px_circle_at_var(--mouse-x)_var(--mouse-y), rgba(120, 119, 255, 0.15), transparent 50%);">
+    </div>
+
+    <!-- Light Mode Spotlight -->
+    <div class="fixed inset-0 z-[-15] pointer-events-none transition-opacity duration-300 dark:opacity-0 opacity-100"
+         style="background: radial-gradient(600px_circle_at_var(--mouse-x)_var(--mouse-y), rgba(245, 230, 211, 0.4), transparent 50%);">
+    </div>
+
+    <!-- ========================================================================
+         CURSOR SPOTLIGHT - Theme-Aware Blend Mode Effect
+         Dark Mode: Electric Blue/Cyan with screen blend
+         Light Mode: Warm Rye/Toasted Bronze with soft-light blend
+         ======================================================================== -->
+    <!-- Dark Mode Spotlight (Electric Blue) -->
+    <div id="cursorSpotlightDark"
+         class="fixed inset-0 z-[-12] pointer-events-none opacity-0 transition-opacity duration-500"
+         style="
+             mix-blend-mode: screen;
+             background: radial-gradient(
+                 circle 700px at var(--cursor-x, 50%) var(--cursor-y, 50%),
+                 rgba(0, 255, 255, 0.25) 0%,
+                 rgba(0, 200, 255, 0.12) 30%,
+                 rgba(0, 150, 255, 0.05) 50%,
+                 transparent 70%
+             );
+         ">
+    </div>
+
+    <!-- Light Mode Spotlight (Warm Rye / Toasted Bronze) -->
+    <div id="cursorSpotlightLight"
+         class="fixed inset-0 z-[-12] pointer-events-none opacity-0 transition-opacity duration-500"
+         style="
+             mix-blend-mode: soft-light;
+             background: radial-gradient(
+                 circle 700px at var(--cursor-x, 50%) var(--cursor-y, 50%),
+                 rgba(180, 120, 80, 0.4) 0%,
+                 rgba(160, 100, 60, 0.25) 30%,
+                 rgba(140, 90, 50, 0.12) 50%,
+                 transparent 70%
+             );
+         ">
+    </div>
+
+    <!-- Ambient Particle Canvas - Frosted Glass Effect -->
+    <canvas id="ambient-bg" class="fixed inset-0 z-[-20] pointer-events-none"></canvas>
+
+    <!-- Floating Glass Header -->
+    <nav class="floating-header fixed top-4 left-4 right-4 z-50 rounded-full">
+        <div class="flex items-center justify-between px-4 py-2">
+            <!-- Logo -->
+            <div class="flex-shrink-0">
+                <h1 class="font-heading text-sm font-bold text-stone-800 dark:text-white/90 tracking-tight">Gallery</h1>
+            </div>
+
+            <!-- Right side buttons -->
+            <div class="flex items-center gap-1.5">
+                <!-- Auth buttons -->
+                <div id="authButtons" class="flex items-center gap-1">
+                    <button id="loginBtn" class="px-3 py-1.5 rounded-full text-xs font-medium text-stone-600 dark:text-white/60 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-white/10 transition-all cursor-pointer">
+                        <span>Login</span>
+                    </button>
+                </div>
+
+                <!-- User info -->
+                <div id="userInfo" class="hidden flex items-center gap-1">
+                    <span id="welcomeText" class="text-xs text-stone-500 dark:text-white/50 hidden sm:inline"></span>
+                    <button id="logoutBtn" class="px-3 py-1.5 rounded-full text-xs font-medium text-stone-600 dark:text-white/60 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-white/10 transition-all cursor-pointer">
+                        <span>Logout</span>
+                    </button>
+                </div>
+
+                <!-- Upload button -->
+                <button id="uploadBtn" class="px-3 py-1.5 rounded-full text-xs font-medium text-stone-600 dark:text-white/60 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-white/10 transition-all cursor-pointer" aria-label="Upload wallpaper">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                </button>
+                <input type="file" id="fileInput" accept="image/*" class="hidden">
+
+                <!-- Theme toggle -->
+                <button id="themeToggle" class="p-1.5 rounded-full text-stone-600 dark:text-white/60 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-white/10 transition-all cursor-pointer" aria-label="Toggle theme">
+                    <svg id="sunIcon" class="w-3.5 h-3.5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <svg id="moonIcon" class="w-3.5 h-3.5 block dark:hidden text-stone-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="relative z-10 pt-24 pb-12 px-4 sm:px-6">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h2 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 text-stone-800 dark:text-white/90 tracking-tight">Gallery</h2>
+            <p class="text-stone-500 dark:text-white/30 text-sm font-mono">Curated wallpapers for the modern screen</p>
+        </header>
+
+        <!-- Category filters -->
+        <div class="flex flex-wrap justify-center gap-2 mb-8" id="categoryFilters">
+            <button class="filter-pill active" data-category="all">All</button>
+            <button class="filter-pill" data-category="abstract">Abstract</button>
+            <button class="filter-pill" data-category="nature">Nature</button>
+            <button class="filter-pill" data-category="gradient">Gradient</button>
+            <button class="filter-pill" data-category="minimal">Minimal</button>
+            <button class="filter-pill" data-category="art">Art</button>
+        </div>
+
+        <!-- Gallery grid - Dense Masonry -->
+        <div class="dense-grid" id="galleryGrid">
+            <!-- Gallery items will be generated by JavaScript -->
+        </div>
+
+        <!-- Empty state -->
+        <div id="emptyState" class="hidden text-center py-20">
+            <svg class="w-12 h-12 mx-auto mb-4 text-stone-300 dark:text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <p class="text-stone-400 dark:text-white/30 text-sm font-mono">No wallpapers found</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-stone-200 dark:border-white/5 py-6 px-4">
+        <div class="text-center text-stone-400 dark:text-white/20 text-xs font-mono">
+            <p>&copy; 2026 Wallpaper Gallery. All wallpapers for personal use only.</p>
+        </div>
+    </footer>
+
+    <!-- Preview modal -->
+    <div id="previewModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop absolute inset-0 bg-black/95 dark:bg-black/95 backdrop-blur-xl cursor-pointer" id="modalBackdrop"></div>
+        <div class="modal-content absolute inset-2 sm:inset-4 md:inset-8 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-w-7xl mx-auto my-auto bg-white dark:bg-neutral-900">
+            <!-- Left: Image Container -->
+            <div class="w-full md:w-[70%] bg-stone-100 dark:bg-black flex flex-col justify-center items-center min-h-[50vh] md:min-h-auto relative p-6 overflow-hidden">
+                <img id="ambientBlur" class="absolute inset-0 w-full h-full object-cover blur-3xl opacity-40" src="" alt="">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40"></div>
+
+                <button id="closeModal" class="absolute top-6 right-6 p-3 rounded-2xl bg-white/80 dark:bg-black/50 backdrop-blur-xl cursor-pointer text-stone-800 dark:text-white hover:bg-white dark:hover:bg-black/70 transition-all z-20 border border-stone-200 dark:border-white/10" aria-label="Close modal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <div id="imageFrame" class="relative w-full max-w-md aspect-[9/16] overflow-hidden rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-sm border border-stone-200 dark:border-white/10 shadow-2xl z-10 flex items-center justify-center cursor-crosshair">
+                    <img id="modalImage" src="" alt="Wallpaper preview" class="max-w-full max-h-full object-contain drop-shadow-2xl pointer-events-none">
+
+                    <!-- Lens Overlay -->
+                    <div id="zoomLens" class="absolute hidden pointer-events-none rounded-lg border-2 border-white/60 dark:border-white/40 shadow-2xl z-20"
+                         style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(2px);">
+                    </div>
+
+                    <!-- Amazon-style Zoom Preview Panel -->
+                    <div id="zoomPreview" class="absolute hidden top-4 right-4 w-52 h-72 rounded-2xl overflow-hidden shadow-2xl z-30 border border-white/20 dark:border-white/10 bg-neutral-900/90 dark:bg-black/90 backdrop-blur-xl">
+                        <!-- High-performance background-image approach -->
+                        <div id="zoomPreviewImage" class="w-full h-full bg-cover bg-no-repeat"></div>
+                        <div class="absolute top-3 right-3">
+                            <span class="px-2 py-1 rounded-md bg-white/10 backdrop-blur-md border border-white/20 text-white/90 text-[10px] font-mono font-bold tracking-wider uppercase">2x Zoom</span>
+                        </div>
+                        <!-- Corner accent -->
+                        <div class="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-blue-500/20 to-transparent"></div>
+                    </div>
+
+                    <!-- Zoom hint (shown initially, fades on hover) -->
+                    <div id="zoomHint" class="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-sm border border-white/30 dark:border-white/10 text-stone-700 dark:text-white/90 text-xs font-medium transition-opacity duration-300 pointer-events-none">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                            </svg>
+                            Hover to zoom
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Info Panel -->
+            <div class="w-full md:w-[30%] bg-white dark:bg-neutral-900 p-6 md:p-8 flex flex-col border-l border-stone-200 dark:border-white/5">
+                <!-- Edit Button (shown when logged in and has permission) -->
+                <div class="flex justify-end mb-4">
+                    <button id="editBtn" class="hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-100 dark:bg-black/40 border border-stone-200 dark:border-white/10 text-stone-600 dark:text-gray-300 hover:bg-stone-200 dark:hover:bg-black/60 transition-all cursor-pointer text-sm font-medium">
+                        <svg id="editIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <span id="editBtnText">Edit</span>
+                    </button>
+                </div>
+
+                <!-- Title Section (View/Edit Mode) -->
+                <div class="mb-6">
+                    <div id="titleViewMode">
+                        <h3 id="modalTitle" class="font-heading text-xl md:text-2xl font-bold text-stone-800 dark:text-white"></h3>
+                    </div>
+                    <div id="titleEditMode" class="hidden">
+                        <input id="editTitleInput" type="text" class="edit-input w-full px-4 py-3 text-lg font-bold bg-stone-100 dark:bg-black/40 border-b-2 border-blue-400 dark:border-blue-500 text-stone-800 dark:text-white placeholder-stone-400 dark:placeholder-gray-500 focus:outline-none focus:shadow-lg focus:shadow-blue-500/20 transition-all" placeholder="Enter title...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-stone-100 dark:bg-black/40 rounded-xl p-3 border border-stone-200 dark:border-white/5">
+                        <div class="flex items-center gap-2 mb-1">
+                            <svg class="w-4 h-4 text-stone-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                            </svg>
+                            <span class="text-stone-500 dark:text-gray-500 text-xs uppercase tracking-wider font-mono">Resolution</span>
+                        </div>
+                        <p id="modalResolution" class="font-mono text-sm text-stone-600 dark:text-gray-300">Loading...</p>
+                    </div>
+
+                    <div class="bg-stone-100 dark:bg-black/40 rounded-xl p-3 border border-stone-200 dark:border-white/5">
+                        <div class="flex items-center gap-2 mb-1">
+                            <svg class="w-4 h-4 text-stone-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span class="text-stone-500 dark:text-gray-500 text-xs uppercase tracking-wider font-mono">Format</span>
+                        </div>
+                        <p class="font-mono text-sm text-stone-600 dark:text-gray-300">JPG</p>
+                    </div>
+
+                    <div class="bg-stone-100 dark:bg-black/40 rounded-xl p-3 border border-stone-200 dark:border-white/5 col-span-2">
+                        <div class="flex items-center gap-2 mb-1">
+                            <svg class="w-4 h-4 text-stone-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            <span class="text-stone-500 dark:text-gray-500 text-xs uppercase tracking-wider font-mono">Category</span>
+                        </div>
+                        <p id="modalCategory" class="text-sm text-stone-600 dark:text-gray-300">—</p>
+                        <select id="editCategorySelect" class="hidden edit-input w-full mt-1 px-3 py-2 text-sm bg-stone-100 dark:bg-black/40 border-b-2 border-violet-400 dark:border-violet-500 text-stone-800 dark:text-white focus:outline-none focus:shadow-lg focus:shadow-violet-500/20 transition-all cursor-pointer">
+                            <option value="abstract">抽象</option>
+                            <option value="nature">自然</option>
+                            <option value="minimal">极简</option>
+                            <option value="gradient">渐变</option>
+                            <option value="art">艺术</option>
+                            <option value="upload">上传</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <p class="text-stone-500 dark:text-gray-500 text-xs uppercase tracking-wider mb-2 font-mono">Filename</p>
+                    <p id="modalFilename" class="text-stone-800 dark:text-white font-medium text-sm truncate bg-stone-100 dark:bg-black/30 rounded-lg px-3 py-2 border border-stone-200 dark:border-white/5 font-mono"></p>
+                </div>
+
+                <div class="mb-5">
+                    <p class="text-stone-500 dark:text-gray-500 text-xs uppercase tracking-wider mb-3 font-mono">Colors</p>
+                    <div class="flex gap-2">
+                        <span class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 shadow-lg shadow-violet-500/30"></span>
+                        <span class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 shadow-lg shadow-blue-500/30"></span>
+                        <span class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 shadow-lg shadow-emerald-500/30"></span>
+                        <span class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30"></span>
+                        <span class="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 shadow-lg shadow-rose-500/30"></span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-stone-500 dark:text-gray-500 text-xs uppercase tracking-wider mb-2 font-mono">Tags</p>
+                    <div id="modalTags" class="flex flex-wrap gap-2">
+                        <!-- Tags will be inserted here by JS -->
+                    </div>
+                    <input id="editTagsInput" type="text" class="hidden edit-input w-full px-3 py-2 text-sm bg-stone-100 dark:bg-black/40 border-b-2 border-emerald-400 dark:border-emerald-500 text-stone-800 dark:text-white placeholder-stone-400 dark:placeholder-gray-500 focus:outline-none focus:shadow-lg focus:shadow-emerald-500/20 transition-all" placeholder="Enter tags separated by commas...">
+                </div>
+
+                <button id="downloadBtn" class="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-500 via-violet-500 to-fuchsia-500 hover:from-blue-600 hover:via-violet-600 hover:to-fuchsia-600 text-white rounded-2xl font-semibold transition-all duration-300 cursor-pointer relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-400 via-violet-400 to-fuchsia-400 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300"></div>
+                    <svg class="w-5 h-5 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span class="relative z-10">Download</span>
+                </button>
+
+                <button id="deleteBtn" class="hidden mt-3 w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 rounded-xl font-medium transition-all duration-300 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Delete Image
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login/Register Modal -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden">
+        <div class="auth-modal-backdrop absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" id="authModalBackdrop"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="auth-modal-content relative w-full max-w-md bg-white dark:bg-neutral-900/95 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl p-8 border border-stone-200 dark:border-white/10">
+                <button id="closeAuthModal" class="absolute top-4 right-4 p-2 rounded-xl bg-stone-100 dark:bg-black/30 backdrop-blur-sm cursor-pointer text-stone-500 dark:text-white/60 hover:text-stone-800 dark:hover:text-white hover:bg-stone-200 dark:hover:bg-black/50 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <div class="text-center mb-8">
+                    <h2 class="font-heading text-2xl font-bold bg-gradient-to-r from-blue-500 to-violet-500 dark:from-blue-400 dark:to-violet-400 bg-clip-text text-transparent">Gallery</h2>
+                    <p class="text-stone-500 dark:text-white/50 text-sm mt-1">Login to upload and manage wallpapers</p>
+                </div>
+
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-stone-600 dark:text-white/60 text-xs uppercase tracking-wider mb-2 font-mono">Username</label>
+                        <input type="text" id="loginUsername" required
+                            class="w-full px-4 py-3 bg-stone-100 dark:bg-black/30 border border-stone-200 dark:border-white/10 rounded-xl text-stone-800 dark:text-white placeholder-stone-400 dark:placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:bg-stone-200 dark:focus:bg-black/40 transition-all"
+                            placeholder="Enter username">
+                    </div>
+                    <div>
+                        <label class="block text-stone-600 dark:text-white/60 text-xs uppercase tracking-wider mb-2 font-mono">Password</label>
+                        <input type="password" id="loginPassword" required
+                            class="w-full px-4 py-3 bg-stone-100 dark:bg-black/30 border border-stone-200 dark:border-white/10 rounded-xl text-stone-800 dark:text-white placeholder-stone-400 dark:placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:bg-stone-200 dark:focus:bg-black/40 transition-all"
+                            placeholder="Enter password">
+                    </div>
+                    <p id="loginError" class="hidden text-red-500 dark:text-red-400 text-sm"></p>
+                    <button type="submit"
+                        class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-violet-500 hover:from-blue-600 hover:to-violet-600 text-white rounded-xl font-semibold transition-all duration-300 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        Login
+                    </button>
+                </form>
+
+                <form id="registerForm" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-stone-600 dark:text-white/60 text-xs uppercase tracking-wider mb-2 font-mono">Username</label>
+                        <input type="text" id="registerUsername" required minlength="3"
+                            class="w-full px-4 py-3 bg-stone-100 dark:bg-black/30 border border-stone-200 dark:border-white/10 rounded-xl text-stone-800 dark:text-white placeholder-stone-400 dark:placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:bg-stone-200 dark:focus:bg-black/40 transition-all"
+                            placeholder="Min 3 characters">
+                    </div>
+                    <div>
+                        <label class="block text-stone-600 dark:text-white/60 text-xs uppercase tracking-wider mb-2 font-mono">Password</label>
+                        <input type="password" id="registerPassword" required minlength="6"
+                            class="w-full px-4 py-3 bg-stone-100 dark:bg-black/30 border border-stone-200 dark:border-white/10 rounded-xl text-stone-800 dark:text-white placeholder-stone-400 dark:placeholder-white/30 focus:outline-none focus:border-blue-500/50 focus:bg-stone-200 dark:focus:bg-black/40 transition-all"
+                            placeholder="Min 6 characters">
+                    </div>
+                    <p id="registerError" class="hidden text-red-500 dark:text-red-400 text-sm"></p>
+                    <button type="submit"
+                        class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl font-semibold transition-all duration-300 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
+                        Register
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-stone-500 dark:text-white/50 text-sm">
+                        <span id="toggleText">Don't have an account?</span>
+                        <button id="toggleAuthMode" class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium ml-1 transition-colors">
+                            Sign up
+                        </button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Force fresh load of main.js by adding timestamp
+        var script = document.createElement('script');
+        script.src = 'js/main.js?v=' + Date.now();
+        script.onload = function() {
+            console.log('[LOADER] main.js loaded successfully');
+        };
+        script.onerror = function() {
+            console.error('[LOADER] Failed to load main.js');
+        };
+        document.head.appendChild(script);
+    </script>
+
+    <!-- SortableJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+    <!-- ========================================================================
+         E-COMMERCE GRADE LENS ZOOM
+         High-performance 2x zoom using background-position (no DOM manipulation)
+         ======================================================================== -->
+    <style>
+        /* Lens overlay - glassmorphism effect */
+        #zoomLens {
+            width: 140px;
+            height: 140px;
+            transition: opacity 150ms ease, box-shadow 150ms ease;
+        }
+
+        html.dark #zoomLens {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        html:not(.dark) #zoomLens {
+            background: rgba(0, 0, 0, 0.06);
+            border-color: rgba(0, 0, 0, 0.15);
+            box-shadow:
+                0 0 0 1px rgba(0, 0, 0, 0.05),
+                0 8px 32px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        /* Zoom preview panel - smooth reveal animation */
+        #zoomPreview {
+            transition: opacity 200ms ease, transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #zoomPreview.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #zoomPreview:not(.active) {
+            opacity: 0;
+            transform: scale(0.92);
+        }
+
+        /* Zoom hint - fade animation */
+        #zoomHint {
+            transition: opacity 300ms ease, transform 300ms ease;
+        }
+
+        #zoomHint.fade-out {
+            opacity: 0;
+            transform: translateX(-50%) translateY(4px);
+        }
+
+        /* Edit Mode Input Styles - Glassmorphism */
+        .edit-input {
+            background: rgba(241, 245, 249, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: none;
+            border-radius: 8px;
+            transition: all 200ms ease;
+        }
+
+        html.dark .edit-input {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .edit-input::placeholder {
+            color: rgba(168, 162, 158, 0.8);
+        }
+
+        html.dark .edit-input::placeholder {
+            color: rgba(107, 114, 128, 0.6);
+        }
+
+        /* Edit button icon transition */
+        #editBtn svg {
+            transition: transform 200ms ease;
+        }
+
+        #editBtn:hover svg {
+            transform: scale(1.1);
+        }
+
+        /* Save icon animation */
+        #editBtn.saving svg {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+    </style>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // DOM Elements
+        const imageFrame = document.getElementById('imageFrame');
+        const modalImage = document.getElementById('modalImage');
+        const zoomLens = document.getElementById('zoomLens');
+        const zoomPreview = document.getElementById('zoomPreview');
+        const zoomPreviewImage = document.getElementById('zoomPreviewImage');
+        const zoomHint = document.getElementById('zoomHint');
+
+        if (!imageFrame || !modalImage || !zoomLens || !zoomPreview || !zoomPreviewImage) return;
+
+        // Configuration - Strict 2x zoom as requested
+        const ZOOM_LEVEL = 2;           // 2x magnification (strict requirement)
+        const LENS_SIZE = 140;          // Lens size in pixels
+        const ZOOM_PANEL_WIDTH = 208;   // Matches w-52 class (52 * 4 = 208)
+        const ZOOM_PANEL_HEIGHT = 288;  // Matches h-72 class (72 * 4 = 288)
+
+        let isActive = false;
+        let imageSrc = '';
+
+        // Initialize zoom preview with background-image approach
+        function initZoomPreview() {
+            imageSrc = modalImage.src;
+            // Use background-image for high performance
+            zoomPreviewImage.style.backgroundImage = `url('${imageSrc}')`;
+            // background-size: 200% for 2x zoom
+            zoomPreviewImage.style.backgroundSize = '200% auto';
+        }
+
+        // Core zoom calculation using background-position
+        function updateZoom(clientX, clientY) {
+            const frameRect = imageFrame.getBoundingClientRect();
+            const imgRect = modalImage.getBoundingClientRect();
+
+            // Mouse position relative to image frame
+            const mouseX = clientX - frameRect.left;
+            const mouseY = clientY - frameRect.top;
+
+            // Calculate actual image position within frame
+            const imgLeft = imgRect.left - frameRect.left;
+            const imgTop = imgRect.top - frameRect.top;
+            const imgRight = imgLeft + imgRect.width;
+            const imgBottom = imgTop + imgRect.height;
+
+            // Check if mouse is over the actual image
+            if (mouseX < imgLeft || mouseX > imgRight || mouseY < imgTop || mouseY > imgBottom) {
+                zoomLens.style.opacity = '0';
+                return;
+            }
+
+            zoomLens.style.opacity = '1';
+
+            // Calculate lens position (centered on mouse, constrained to image)
+            let lensLeft = mouseX - LENS_SIZE / 2;
+            let lensTop = mouseY - LENS_SIZE / 2;
+
+            // Constrain lens to image bounds
+            lensLeft = Math.max(imgLeft, Math.min(lensLeft, imgRight - LENS_SIZE));
+            lensTop = Math.max(imgTop, Math.min(lensTop, imgBottom - LENS_SIZE));
+
+            // Position the lens overlay
+            zoomLens.style.left = `${lensLeft}px`;
+            zoomLens.style.top = `${lensTop}px`;
+
+            // Calculate relative position of lens center within image (0-1)
+            const lensCenterX = lensLeft + LENS_SIZE / 2;
+            const lensCenterY = lensTop + LENS_SIZE / 2;
+            const relativeX = (lensCenterX - imgLeft) / imgRect.width;
+            const relativeY = (lensCenterY - imgTop) / imgRect.height;
+
+            // Update zoom preview using background-position
+            // This is the high-performance approach - no DOM manipulation
+            // Position is calculated as percentage, matching the 200% background-size
+            const bgPosX = relativeX * 100;
+            const bgPosY = relativeY * 100;
+            zoomPreviewImage.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+        }
+
+        // ==================== Mouse Events ====================
+
+        imageFrame.addEventListener('mouseenter', function() {
+            isActive = true;
+            initZoomPreview();
+            zoomLens.classList.remove('hidden');
+            zoomPreview.classList.remove('hidden');
+            zoomPreview.classList.add('active');
+            zoomHint.classList.add('fade-out');
+        });
+
+        imageFrame.addEventListener('mousemove', function(e) {
+            if (!isActive) return;
+            requestAnimationFrame(() => updateZoom(e.clientX, e.clientY));
+        });
+
+        imageFrame.addEventListener('mouseleave', function() {
+            isActive = false;
+            zoomLens.classList.add('hidden');
+            zoomPreview.classList.remove('active');
+            zoomHint.classList.remove('fade-out');
+        });
+
+        // ==================== Touch Events (Mobile) ====================
+
+        imageFrame.addEventListener('touchstart', function(e) {
+            isActive = true;
+            initZoomPreview();
+            zoomLens.classList.remove('hidden');
+            zoomPreview.classList.remove('hidden');
+            zoomPreview.classList.add('active');
+            zoomHint.classList.add('fade-out');
+
+            const touch = e.touches[0];
+            requestAnimationFrame(() => updateZoom(touch.clientX, touch.clientY));
+        }, { passive: true });
+
+        imageFrame.addEventListener('touchmove', function(e) {
+            if (!isActive) return;
+            const touch = e.touches[0];
+            requestAnimationFrame(() => updateZoom(touch.clientX, touch.clientY));
+        }, { passive: true });
+
+        imageFrame.addEventListener('touchend', function() {
+            isActive = false;
+            zoomLens.classList.add('hidden');
+            zoomPreview.classList.remove('active');
+            zoomHint.classList.remove('fade-out');
+        });
+
+        // ==================== Re-init on image change ====================
+
+        // Observer for modal image changes
+        const imageObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                    initZoomPreview();
+                }
+            });
+        });
+
+        imageObserver.observe(modalImage, { attributes: true });
+
+    })();
+    </script>
+</body>
+</html>

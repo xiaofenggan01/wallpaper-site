@@ -1,0 +1,17 @@
+{
+  "enabledPlugins": {
+    "document-skills@anthropic-agent-skills": true,
+    "document-skills-docx@awesome-claude-skills": true,
+    "frontend-design@claude-plugins-official": true,
+    "supabase@claude-plugins-official": true,
+    "Notion@claude-plugins-official": true,
+    "theme-factory@awesome-claude-skills": true,
+    "video-downloader@awesome-claude-skills": true,
+    "canvas-design@awesome-claude-skills": true,
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "github@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  }
+}
