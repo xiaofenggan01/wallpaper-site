@@ -10,6 +10,174 @@ const path = require('path');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
+// ============================================================================
+// CUSTOM SUPABASE SESSION STORE (For Vercel Serverless Compatibility)
+// ============================================================================
+
+class SupabaseSessionStore extends session.Store {
+    constructor(supabase, options = {}) {
+        super();
+        this.supabase = supabase;
+        this.tableName = options.tableName || 'sessions';
+        this.autoRemoveInterval = options.autoRemoveInterval || 24 * 60 * 60 * 1000; // 24 hours
+
+        // Set up automatic cleanup of expired sessions
+        if (this.autoRemoveInterval > 0) {
+            this.cleanupTimer = setInterval(() => {
+                this.cleanup().catch(err => console.error('[SESSION] Cleanup error:', err));
+            }, this.autoRemoveInterval);
+        }
+    }
+
+    async get(sid, callback) {
+        try {
+            const { data, error } = await this.supabase
+                .from(this.tableName)
+                .select('sess')
+                .eq('sid', sid)
+                .single();
+
+            if (error || !data) {
+                return callback(null, null);
+            }
+
+            // Parse JSON data
+            const sessionData = typeof data.sess === 'string'
+                ? JSON.parse(data.sess)
+                : data.sess;
+
+            callback(null, sessionData);
+        } catch (err) {
+            callback(err);
+        }
+    }
+
+    async set(sid, session, callback) {
+        try {
+            const expires = new Date(Date.now() + session.cookie.maxAge);
+            const sessionData = JSON.stringify(session);
+
+            const { error } = await this.supabase
+                .from(this.tableName)
+                .upsert({
+                    sid: sid,
+                    sess: sessionData,
+                    expires: expires.toISOString()
+                }, {
+                    onConflict: 'sid'
+                });
+
+            if (error) {
+                console.error('[SESSION] Set error:', error);
+                return callback(error);
+            }
+
+            callback(null);
+        } catch (err) {
+            callback(err);
+        }
+    }
+
+    async destroy(sid, callback) {
+        try {
+            const { error } = await this.supabase
+                .from(this.tableName)
+                .delete()
+                .eq('sid', sid);
+
+            if (error) {
+                console.error('[SESSION] Destroy error:', error);
+                return callback(error);
+            }
+
+            callback(null);
+        } catch (err) {
+            callback(err);
+        }
+    }
+
+    async all(callback) {
+        try {
+            const { data, error } = await this.supabase
+                .from(this.tableName)
+                .select('sid, sess');
+
+            if (error) {
+                return callback(error);
+            }
+
+            const sessions = {};
+            for (const row of data) {
+                const sessionData = typeof row.sess === 'string'
+                    ? JSON.parse(row.sess)
+                    : row.sess;
+                sessions[row.sid] = sessionData;
+            }
+
+            callback(null, sessions);
+        } catch (err) {
+            callback(err);
+        }
+    }
+
+    async length(callback) {
+        try {
+            const { count, error } = await this.supabase
+                .from(this.tableName)
+                .select('*', { count: 'exact', head: true });
+
+            if (error) {
+                return callback(error);
+            }
+
+            callback(null, count || 0);
+        } catch (err) {
+            callback(err);
+        }
+    }
+
+    async clear(callback) {
+        try {
+            const { error } = await this.supabase
+                .from(this.tableName)
+                .delete()
+                .neq('sid', ''); // Delete all (neq empty string matches everything)
+
+            if (error) {
+                return callback(error);
+            }
+
+            callback(null);
+        } catch (err) {
+            callback(err);
+        }
+    }
+
+    async cleanup() {
+        try {
+            const now = new Date().toISOString();
+            const { data, error } = await this.supabase
+                .from(this.tableName)
+                .delete()
+                .lt('expires', now);
+
+            if (error) {
+                console.error('[SESSION] Cleanup error:', error);
+            } else {
+                console.log('[SESSION] Cleaned up expired sessions');
+            }
+        } catch (err) {
+            console.error('[SESSION] Cleanup error:', err);
+        }
+    }
+
+    destroy() {
+        if (this.cleanupTimer) {
+            clearInterval(this.cleanupTimer);
+        }
+    }
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -41,9 +209,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session configuration
+// Session configuration with Supabase store for Vercel compatibility
+const sessionStore = new SupabaseSessionStore(supabase, {
+    tableName: 'sessions'
+});
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'wallpaper-gallery-secret-key',
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -633,11 +806,13 @@ app.listen(PORT, () => {
     console.log(`📍 URL: http://localhost:${PORT}`);
     console.log(`🗄️  Database: Supabase (${supabaseUrl})`);
     console.log(`📦 Storage: Supabase Storage (wallpapers bucket)`);
+    console.log(`🔐 Session: Supabase Store (sessions table)`);
     console.log(`${'='.repeat(60)}\n`);
     console.log(`⚠️  IMPORTANT SETUP STEPS:`);
-    console.log(`   1. Run supabase-schema.sql in Supabase SQL Editor`);
+    console.log(`   1. Run the SQL commands below in Supabase SQL Editor`);
     console.log(`   2. Create 'wallpapers' storage bucket in Supabase`);
     console.log(`   3. Make bucket public for URL access`);
-    console.log(`   4. Default admin: admin / admin123`);
+    console.log(`   4. Set up environment variables in Vercel`);
+    console.log(`   5. Default admin: admin / admin123`);
     console.log(`${'='.repeat(60)}\n`);
 });
